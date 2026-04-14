@@ -1,41 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Management - Priyanshu</title>
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
-        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: inline-block; }
-        input { margin: 5px; padding: 10px; width: 80%; }
-        button { padding: 10px 20px; background: #1a73e8; color: white; border: none; cursor: pointer; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .header { background: #2c3e50; color: white; width: 100%; text-align: center; padding: 20px 0; font-size: 24px; font-weight: bold; }
+        .container { display: flex; gap: 20px; padding: 20px; width: 95%; max-width: 1200px; }
+        .form-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; }
+        .table-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-grow: 1; overflow-x: auto; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { padding: 10px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #27ae60; }
+        .btn-update { background: #2980b9; }
+        .btn-delete { background: #e74c3c; }
+        .btn-clear { background: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f1f1f1; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Student Management System</h1>
-        <p>CST Department - Project by Priyanshu</p>
-        <hr>
-        <input type="text" id="name" placeholder="Student Name">
+
+<div class="header">STUDENT MANAGEMENT SYSTEM</div>
+
+<div class="container">
+    <div class="form-box">
+        <h3 style="margin-top:0">Registration Form</h3>
         <input type="text" id="roll" placeholder="Roll Number">
-        <input type="text" id="dept" placeholder="Department (CST)">
-        <br>
-        <button id="submit-btn" py-click="add_student()">Add Student</button>
-        <div id="output" style="margin-top: 20px; font-weight: bold; color: green;"></div>
+        <input type="text" id="name" placeholder="Student Name">
+        <select id="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+        <input type="text" id="dept" placeholder="Department (e.g. CST)">
+        <input type="text" id="admission" placeholder="Admission Year">
+        <input type="text" id="contact" placeholder="Contact No">
+        
+        <div class="btn-group">
+            <button class="btn-save" py-click="add_student">SAVE</button>
+            <button class="btn-update" py-click="update_student">UPDATE</button>
+            <button class="btn-delete" py-click="delete_student">DELETE</button>
+            <button class="btn-clear" py-click="clear_fields">CLEAR</button>
+        </div>
+        <p id="msg" style="color: blue; font-size: 14px; margin-top: 10px;"></p>
     </div>
 
-    <py-script>
-        def add_student():
-            name = Element("name").value
-            roll = Element("roll").value
-            dept = Element("dept").value
-            
-            if name and roll:
-                display_text = f"Student {name} (Roll: {roll}) added successfully in {dept}!"
-                Element("output").write(display_text)
-            else:
-                Element("output").write("Please fill all details.")
-    </py-script>
+    <div class="table-box">
+        <h3>Student Records</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Dept</th>
+                    <th>Year</th>
+                    <th>Contact</th>
+                </tr>
+            </thead>
+            <tbody id="student-table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="py">
+    from pyscript import document
+
+    # Database in memory (list)
+    students_list = []
+
+    def render_table():
+        tbody = document.querySelector("#student-table-body")
+        tbody.innerHTML = ""
+        for s in students_list:
+            row = f"""
+            <tr onclick="fill_form('{s['roll']}', '{s['name']}', '{s['gender']}', '{s['dept']}', '{s['admission']}', '{s['contact']}')">
+                <td>{s['roll']}</td>
+                <td>{s['name']}</td>
+                <td>{s['gender']}</td>
+                <td>{s['dept']}</td>
+                <td>{s['admission']}</td>
+                <td>{s['contact']}</td>
+            </tr>
+            """
+            tbody.innerHTML += row
+
+    def add_student(event):
+        roll = document.querySelector("#roll").value
+        name = document.querySelector("#name").value
+        if not roll or not name:
+            document.querySelector("#msg").innerText = "Error: Roll & Name bhariye!"
+            return
+        
+        # Check if roll exists
+        if any(s['roll'] == roll for s in students_list):
+            document.querySelector("#msg").innerText = "Error: Roll No pehle se hai!"
+            return
+
+        new_student = {
+            "roll": roll,
+            "name": name,
+            "gender": document.querySelector("#gender").value,
+            "dept": document.querySelector("#dept").value,
+            "admission": document.querySelector("#admission").value,
+            "contact": document.querySelector("#contact").value
+        }
+        students_list.append(new_student)
+        render_table()
+        clear_fields(None)
+        document.querySelector("#msg").innerText = "Success: Data Add Ho Gaya!"
+
+    def delete_student(event):
+        roll = document.querySelector("#roll").value
+        global students_list
+        students_list = [s for s in students_list if s['roll'] != roll]
+        render_table()
+        clear_fields(None)
+        document.querySelector("#msg").innerText = "Deleted Successfully!"
+
+    def update_student(event):
+        roll = document.querySelector("#roll").value
+        for s in students_list:
+            if s['roll'] == roll:
+                s['name'] = document.querySelector("#name").value
+                s['gender'] = document.querySelector("#gender").value
+                s['dept'] = document.querySelector("#dept").value
+                s['admission'] = document.querySelector("#admission").value
+                s['contact'] = document.querySelector("#contact").value
+                break
+        render_table()
+        document.querySelector("#msg").innerText = "Record Updated!"
+
+    def clear_fields(event):
+        document.querySelector("#roll").value = ""
+        document.querySelector("#name").value = ""
+        document.querySelector("#dept").value = ""
+        document.querySelector("#admission").value = ""
+        document.querySelector("#contact").value = ""
+        document.querySelector("#msg").innerText = ""
+
+    # Helping JS function to fill form (can be called from Python context)
+    from js import window
+    def fill_form_js(roll, name, gender, dept, admission, contact):
+        document.querySelector("#roll").value = roll
+        document.querySelector("#name").value = name
+        document.querySelector("#gender").value = gender
+        document.querySelector("#dept").value = dept
+        document.querySelector("#admission").value = admission
+        document.querySelector("#contact").value = contact
+
+    window.fill_form = fill_form_js
+</script>
+
 </body>
 </html>
