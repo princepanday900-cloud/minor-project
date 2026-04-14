@@ -1,20 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management System</title>
+    <title>Student Management - Priyanshu</title>
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: inline-block; }
+        input { margin: 5px; padding: 10px; width: 80%; }
+        button { padding: 10px 20px; background: #1a73e8; color: white; border: none; cursor: pointer; }
+    </style>
 </head>
-<body style="background-color: #f0f2f5; font-family: Arial, sans-serif; padding: 20px;">
-    <h1 style="color: #1a73e8; text-align: center;">Mera Minor Project: Student Management</h1>
-    <hr>
-    
-    <py-script src="./project.py"></py-script>
-
-    <div style="margin-top: 50px; text-align: center; color: gray;">
-        <p>Created by Priyanshu - CST Department</p>
+<body>
+    <div class="container">
+        <h1>Student Management System</h1>
+        <p>CST Department - Project by Priyanshu</p>
+        <hr>
+        <input type="text" id="name" placeholder="Student Name">
+        <input type="text" id="roll" placeholder="Roll Number">
+        <input type="text" id="dept" placeholder="Department (CST)">
+        <br>
+        <button id="submit-btn" py-click="add_student()">Add Student</button>
+        <div id="output" style="margin-top: 20px; font-weight: bold; color: green;"></div>
     </div>
+
+    <py-script>
+        def add_student():
+            name = Element("name").value
+            roll = Element("roll").value
+            dept = Element("dept").value
+            
+            if name and roll:
+                display_text = f"Student {name} (Roll: {roll}) added successfully in {dept}!"
+                Element("output").write(display_text)
+            else:
+                Element("output").write("Please fill all details.")
+    </py-script>
 </body>
 </html>
